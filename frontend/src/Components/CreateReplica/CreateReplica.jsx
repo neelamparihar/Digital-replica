@@ -10,113 +10,76 @@ const CreateReplica = () => {
     age: "",
     email: "",
     description: "",
-    gender: "",
-    occupation: "",
-    personality: "",
-    hobbies: "",
-    image: null, // New field for image
   });
 
-  const [imagePreview, setImagePreview] = useState(null); // State to store the image preview
-  const [imageUrl, setImageUrl] = useState(null); // State to store the uploaded image URL
+  //const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
-    // Check if the user is logged in when the component mounts
-    const isLoggedIn = localStorage.getItem("token"); // Assuming token is stored in localStorage
-
+    const isLoggedIn = localStorage.getItem("token");
     if (!isLoggedIn) {
-      navigate("/auth"); // Redirect to the auth page if not logged in
+      navigate("/auth");
     }
   }, [navigate]);
 
-  // Handle input changes
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
-    if (type === "file") {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: files[0], // Store the first selected file
-      }));
-
-      // Generate the image preview
-      const file = files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result); // Set the image preview
-      };
-      if (file) {
-        reader.readAsDataURL(file); // Read the image file as a URL
-      }
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  // Function to upload image to Cloudinary
-  const uploadImageToCloudinary = async (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "your_upload_preset"); // Replace with your Cloudinary upload preset
+  // const uploadImageToCloudinary = async (imageFile) => {
+  //   const cloudinaryFormData = new FormData();
+  //   cloudinaryFormData.append("file", imageFile);
+  //   cloudinaryFormData.append("upload_preset", "replica");
 
-    try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/your_cloud_name/image/upload`, // Replace with your Cloudinary cloud name
-        formData
-      );
-      setImageUrl(response.data.secure_url); // Set the uploaded image URL
-      alert("Image uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      alert("Error uploading image.");
-    }
-  };
+  //   try {
+  //     const response = await axios.post(
+  //       `https://api.cloudinary.com/v1_1/dpc7crbo5/image/upload`,
+  //       cloudinaryFormData
+  //     );
+  //     return response.data.secure_url;
+  //   } catch (error) {
+  //     console.error("Error uploading image:", error);
+  //     throw new Error("Image upload failed");
+  //   }
+  // };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.image) {
-      await uploadImageToCloudinary(formData.image); // Upload image to Cloudinary
-    }
-
-    const formDataToSend = new FormData();
-    for (const key in formData) {
-      formDataToSend.append(key, formData[key]);
-    }
-
     try {
-      const response = await fetch("http://localhost:5000/api/create-replica", {
-        method: "POST",
-        body: formDataToSend,
-      });
+      // let uploadedImageUrl = null;
+      // if (formData.image) {
+      //   uploadedImageUrl = await uploadImageToCloudinary(formData.image);
+      // }
 
-      const data = await response.json();
-      if (response.ok) {
-        alert(data.message); // Success message
+      // const submissionData = {
+      //   ...formData,
+      //   // image: uploadedImageUrl,
+      // };
+      console.log(formData);
+      const response = await axios.post(
+        "http://localhost:5000/api/create-replica",
+        formData
+      );
+
+      if (response.status === 200) {
+        alert(response.data.message);
+        setFormData({
+          name: "",
+          age: "",
+          email: "",
+          description: "",
+        });
       } else {
-        alert("Error: " + data.message); // Error message
+        alert("Error: " + response.data.message);
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error submitting form:", error);
       alert("An error occurred while submitting the form.");
     }
-
-    // Optionally, clear the form after submission
-    setFormData({
-      name: "",
-      age: "",
-      email: "",
-      description: "",
-      gender: "",
-      occupation: "",
-      personality: "",
-      hobbies: "",
-      image: null, // Clear the image field
-    });
-    setImagePreview(null); // Clear the image preview
   };
 
   return (
@@ -167,50 +130,6 @@ const CreateReplica = () => {
           ></textarea>
         </div>
         <div className="form-group">
-          <label htmlFor="gender">Gender:</label>
-          <input
-            type="text"
-            id="gender"
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="occupation">Occupation:</label>
-          <input
-            type="text"
-            id="occupation"
-            name="occupation"
-            value={formData.occupation}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="personality">Personality Traits:</label>
-          <input
-            type="text"
-            id="personality"
-            name="personality"
-            value={formData.personality}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="hobbies">Hobbies:</label>
-          <input
-            type="text"
-            id="hobbies"
-            name="hobbies"
-            value={formData.hobbies}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
           <label htmlFor="image">Character Image:</label>
           <input
             type="file"
@@ -218,9 +137,9 @@ const CreateReplica = () => {
             name="image"
             accept="image/*"
             onChange={handleChange}
-            required
+            // required
           />
-          {imagePreview && (
+          {/* {imagePreview && (
             <div className="image-preview-container">
               <img
                 src={imagePreview}
@@ -228,7 +147,7 @@ const CreateReplica = () => {
                 className="image-preview"
               />
             </div>
-          )}
+          )} */}
         </div>
         <button type="submit" className="submit-button">
           Create Replica

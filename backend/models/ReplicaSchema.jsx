@@ -23,6 +23,10 @@ const replicaSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  image: {
+    type: String, // Store the Cloudinary URL
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
