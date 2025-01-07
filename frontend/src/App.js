@@ -7,7 +7,7 @@ import CreateReplica from "./Components/CreateReplica/CreateReplica.jsx";
 import Pricing from "./Components/Pricing/Pricing.jsx";
 import Replica from "./Components/Replica/Replica.jsx";
 import Auth from "./Components/Auth/Auth.jsx";
-
+import Chatbot from "./Components/Chatbot/Chatbot.jsx";
 const App = () => {
   return (
     <Router>
@@ -19,6 +19,7 @@ const App = () => {
         <Route path="/replica" element={<Replica />} />
         <Route path="/createReplica" element={<CreateReplica />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/chatbot" element={<Chatbot />} />
       </Routes>
     </Router>
   );

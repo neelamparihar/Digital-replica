@@ -1,57 +1,72 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate hook
-import { auth } from "../../firebase"; // Import Firebase authentication
-import { onAuthStateChanged } from "firebase/auth"; // Import Firebase auth state listener
+import { useNavigate } from "react-router-dom";
+import { auth } from "../../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import axios from "axios";
 import "./Replica.css";
 
 const Replica = () => {
-  const navigate = useNavigate(); // Initialize navigate function
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [replicas, setReplicas] = useState([]);
 
   useEffect(() => {
-    // Check the user's login status when the component mounts
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsLoggedIn(true); // User is logged in
-      } else {
-        setIsLoggedIn(false); // User is not logged in
-      }
+      setIsLoggedIn(!!user);
     });
 
-    // Cleanup the listener when the component unmounts
+    fetchReplicas();
     return () => unsubscribe();
   }, []);
 
-  const cardData = {
-    title: "Create Your Digital Replica",
-    image: "/replica.jpg",
-    link: "#", // This will be replaced with navigation logic
+  const fetchReplicas = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/fetch-replica"
+      );
+      setReplicas(response.data);
+    } catch (error) {
+      console.error("Error fetching replicas:", error);
+    }
   };
 
-  // Function to handle card click and navigate to another route
-  const handleCardClick = () => {
+  const handleStaticCardClick = () => {
     if (isLoggedIn) {
-      navigate("/CreateReplica"); // Navigate to the CreateReplica route if logged in
+      navigate("/CreateReplica");
     } else {
-      navigate("/auth"); // Redirect to the auth page if not logged in
+      navigate("/auth");
     }
   };
 
   return (
     <div className="replica-container">
-      <h1>Create Your Digital Replica</h1>
+      <h1>Your Digital Replicas</h1>
       <p>
         Start your journey to create a personalized AI-powered digital replica.
       </p>
+
       <div className="replica-cards">
-        <div className="replica-card" onClick={handleCardClick}>
-          <img src={cardData.image} alt={cardData.title} />
+        <div className="replica-card" onClick={handleStaticCardClick}>
+          <img src="/replica.jpg" alt="Create Your Digital Replica" />
           <div className="card-content">
-            <h3>{cardData.title}</h3>
-            <p>{cardData.description}</p>
+            <h3>Create Your Digital Replica</h3>
+            <p>Start your journey to create a personalized digital replica.</p>
             <button className="card-button">Get Started</button>
           </div>
         </div>
+
+        {replicas?.map((replica) => (
+          <div className="replica-card" key={replica._id}>
+            <h3>{replica.name}</h3>
+            <p>{replica.description}</p>
+            <button
+              className="card-button"
+              onClick={() => alert("Feature coming soon!")}
+            >
+              View Details
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -1,39 +1,13 @@
+// models/ReplicaSchema.jsx
 const mongoose = require("mongoose");
 
-// Define the schema for storing replica form data
-const replicaSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  age: {
-    type: Number,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true,
-  },
-  description: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  image: {
-    type: String, // Store the Cloudinary URL
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+const ReplicaSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  age: { type: Number, required: true },
+  email: { type: String, required: true, unique: true },
+  description: { type: String, required: true },
 });
 
-// Create a model from the schema
-const Replica = mongoose.model("Replica", replicaSchema);
+const Replica = mongoose.model("Replica", ReplicaSchema);
 
 module.exports = Replica;

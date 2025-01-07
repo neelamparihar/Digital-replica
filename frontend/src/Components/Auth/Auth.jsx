@@ -3,6 +3,8 @@ import { auth } from "../../firebase.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import "./Auth.css";
@@ -14,6 +16,22 @@ const Auth = () => {
   const [showPopup, setShowPopup] = useState(false); // State for showing the popup
   const [errorMessage, setErrorMessage] = useState(""); // State for error message
   const navigate = useNavigate(); // Initialize navigate
+
+  const googleProvider = new GoogleAuthProvider(); // Initialize Google Auth Provider
+
+  // Google Sign-In Handler
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      console.log("Google Sign-in successful:", user);
+      localStorage.setItem("token", user.accessToken); // Store the token in localStorage
+      navigate("/createReplica"); // Redirect to the home page after successful login
+    } catch (error) {
+      console.error("Error during Google sign-in:", error.message);
+      setErrorMessage("An error occurred during Google sign-in.");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,6 +104,11 @@ const Auth = () => {
           {isSignup ? "Login" : "Sign Up"}
         </span>
       </p>
+
+      {/* Google Sign-In Button */}
+      <button onClick={handleGoogleSignIn} className="google-signin-button">
+        Sign in with Google
+      </button>
 
       {/* Popup for successful account creation */}
       {showPopup && (

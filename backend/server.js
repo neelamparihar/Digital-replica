@@ -1,8 +1,9 @@
+// server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const cloudinary = require("cloudinary").v2;
+const Replica = require("./models/ReplicaSchema.jsx"); // Changed import
 require("dotenv").config();
 
 const app = express();
@@ -11,7 +12,6 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json({ limit: "10mb" }));
 
-// MongoDB connection
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
@@ -20,24 +20,6 @@ mongoose
   .then(() => console.log("Connected to MongoDB Atlas"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Cloudinary configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// Mongoose schema
-const ReplicaSchema = new mongoose.Schema({
-  name: String,
-  age: Number,
-  email: String,
-  description: String,
-});
-
-const Replica = mongoose.model("Replica", ReplicaSchema);
-
-// API endpoint to create a replica
 app.post("/api/create-replica", async (req, res) => {
   try {
     const { name, age, email, description } = req.body;
@@ -61,7 +43,15 @@ app.post("/api/create-replica", async (req, res) => {
   }
 });
 
-// Start server
+app.get("/api/fetch-replica", async (req, res) => {
+  try {
+    const data = await Replica.find();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

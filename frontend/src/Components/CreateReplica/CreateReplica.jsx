@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import "./CreateReplica.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "./CreateReplica.css";
 
 const CreateReplica = () => {
   const navigate = useNavigate();
@@ -11,8 +11,6 @@ const CreateReplica = () => {
     email: "",
     description: "",
   });
-
-  //const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("token");
@@ -29,37 +27,9 @@ const CreateReplica = () => {
     }));
   };
 
-  // const uploadImageToCloudinary = async (imageFile) => {
-  //   const cloudinaryFormData = new FormData();
-  //   cloudinaryFormData.append("file", imageFile);
-  //   cloudinaryFormData.append("upload_preset", "replica");
-
-  //   try {
-  //     const response = await axios.post(
-  //       `https://api.cloudinary.com/v1_1/dpc7crbo5/image/upload`,
-  //       cloudinaryFormData
-  //     );
-  //     return response.data.secure_url;
-  //   } catch (error) {
-  //     console.error("Error uploading image:", error);
-  //     throw new Error("Image upload failed");
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      // let uploadedImageUrl = null;
-      // if (formData.image) {
-      //   uploadedImageUrl = await uploadImageToCloudinary(formData.image);
-      // }
-
-      // const submissionData = {
-      //   ...formData,
-      //   // image: uploadedImageUrl,
-      // };
-      console.log(formData);
       const response = await axios.post(
         "http://localhost:5000/api/create-replica",
         formData
@@ -128,26 +98,6 @@ const CreateReplica = () => {
             onChange={handleChange}
             required
           ></textarea>
-        </div>
-        <div className="form-group">
-          <label htmlFor="image">Character Image:</label>
-          <input
-            type="file"
-            id="image"
-            name="image"
-            accept="image/*"
-            onChange={handleChange}
-            // required
-          />
-          {/* {imagePreview && (
-            <div className="image-preview-container">
-              <img
-                src={imagePreview}
-                alt="Character Preview"
-                className="image-preview"
-              />
-            </div>
-          )} */}
         </div>
         <button type="submit" className="submit-button">
           Create Replica
