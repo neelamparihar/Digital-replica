@@ -1,57 +1,44 @@
-// server.js
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 const bodyParser = require("body-parser");
-const Replica = require("./models/ReplicaSchema.jsx"); // Changed import
-require("dotenv").config();
+require("dotenv").config(); // Load environment variables
+const cors = require("cors");
+const replicaRoutes = require("./routes/Replica");
 
 const app = express();
-const port = process.env.PORT || 5000;
-
 app.use(cors());
-app.use(bodyParser.json({ limit: "10mb" }));
+// Middleware
+app.use(bodyParser.json());
+
+// MongoDB Connection
+const mongoURI = process.env.MONGODB_URI; // Fetch URI from .env
+if (!mongoURI) {
+  console.error("Error: MONGODB_URI is not defined in .env");
+  process.exit(1);
+}
 
 mongoose
-  .connect(process.env.MONGODB_URI, {
+  .connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("Connected to MongoDB Atlas"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch((err) => {
+    console.error("MongoDB connection error:", err.message);
+    process.exit(1); // Exit process if connection fails
+  });
 
-app.post("/api/create-replica", async (req, res) => {
-  try {
-    const { name, age, email, description } = req.body;
+// Routes
+app.use("/api/replicas", replicaRoutes);
 
-    if (!name || !age || !email || !description) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    const newReplica = new Replica({
-      name,
-      age,
-      email,
-      description,
-    });
-
-    await newReplica.save();
-    res.status(200).json({ message: "Replica created successfully!" });
-  } catch (error) {
-    console.error("Error creating replica:", error);
-    res.status(500).json({ message: "Server error", error });
-  }
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Unhandled Error:", err);
+  res.status(500).json({ message: "Internal Server Error" });
 });
 
-app.get("/api/fetch-replica", async (req, res) => {
-  try {
-    const data = await Replica.find();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Start the server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

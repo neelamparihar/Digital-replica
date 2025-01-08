@@ -7,15 +7,16 @@ const CreateReplica = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
-    age: "",
-    email: "",
     description: "",
+    persona: "",
+    tone: "neutral", // Default value as per schema
   });
 
+  // Check if the user is logged in, if not, redirect to auth page
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("token");
     if (!isLoggedIn) {
-      navigate("/auth");
+      navigate("/auth"); // Redirect to auth page if not logged in
     }
   }, [navigate]);
 
@@ -31,17 +32,18 @@ const CreateReplica = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/create-replica",
+        "http://localhost:5000/api/replicas",
         formData
       );
+      console.log(response.data);
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         alert(response.data.message);
         setFormData({
           name: "",
-          age: "",
-          email: "",
           description: "",
+          persona: "",
+          tone: "neutral",
         });
       } else {
         alert("Error: " + response.data.message);
@@ -68,36 +70,38 @@ const CreateReplica = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="age">Age:</label>
-          <input
-            type="number"
-            id="age"
-            name="age"
-            value={formData.age}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="email">Email:</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
           <label htmlFor="description">Description:</label>
           <textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleChange}
-            required
           ></textarea>
+        </div>
+        <div className="form-group">
+          <label htmlFor="persona">Persona:</label>
+          <input
+            type="text"
+            id="persona"
+            name="persona"
+            value={formData.persona}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="tone">Tone:</label>
+          <select
+            id="tone"
+            name="tone"
+            value={formData.tone}
+            onChange={handleChange}
+          >
+            <option value="neutral">Neutral</option>
+            <option value="friendly">Friendly</option>
+            <option value="professional">Professional</option>
+            <option value="casual">Casual</option>
+          </select>
         </div>
         <button type="submit" className="submit-button">
           Create Replica

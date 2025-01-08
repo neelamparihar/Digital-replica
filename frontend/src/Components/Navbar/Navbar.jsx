@@ -24,6 +24,7 @@ const Navbar = () => {
     signOut(auth) // Sign the user out
       .then(() => {
         setUser(null); // Reset user state after logout
+        localStorage.removeItem("token"); // Remove the token from localStorage
       })
       .catch((error) => {
         console.error("Error signing out:", error.message);
