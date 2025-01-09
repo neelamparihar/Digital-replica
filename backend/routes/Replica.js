@@ -13,7 +13,7 @@ router.get("/", replicaController.getAllReplicas);
 router.get("/:id", replicaController.getReplicaById);
 
 // PUT - Update a replica with a new image
-//router.put("/:id", upload.single("image"), replicaController.updateReplica);
+router.put("/:id", replicaController.updateReplica);
 
 // DELETE - Remove a specific replica
 router.delete("/:id", replicaController.deleteReplica);
