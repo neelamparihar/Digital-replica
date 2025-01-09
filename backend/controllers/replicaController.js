@@ -1,4 +1,6 @@
 const Replica = require("../models/Replica");
+const imagekit = require("../middlewares/imagekit");
+
 
 // GET - Retrieve all replicas
 exports.getAllReplicas = async (req, res) => {
@@ -49,9 +51,22 @@ exports.deleteReplica = async (req, res) => {
 };
 
 // POST - Create a new replica
+
 exports.createReplica = async (req, res) => {
   try {
     const { name, description, persona, tone } = req.body;
+
+    let imageUrl = null;
+
+    // Upload the image to ImageKit if provided
+    if (req.file) {
+      const uploadResponse = await imagekit.upload({
+        file: req.file.buffer, // File buffer from multer
+        fileName: `replica_${Date.now()}`, // Unique filename
+        folder: "/replicas", // Optional folder in ImageKit
+      });
+      imageUrl = uploadResponse.url; // Get the uploaded image URL
+    }
 
     // Save the replica in the database
     const replica = new Replica({
@@ -59,7 +74,9 @@ exports.createReplica = async (req, res) => {
       description,
       persona,
       tone,
+      image: imageUrl, // Save the image URL
     });
+
     await replica.save();
 
     res.status(201).json({ message: "Replica created successfully", replica });
@@ -75,10 +92,25 @@ exports.updateReplica = async (req, res) => {
     const { id } = req.params;
     const { name, description, persona, tone } = req.body;
 
-    // Prepare the updated data
-    const updateData = { name, description, persona, tone };
+    // Check if an image is uploaded
+    let imageUrl;
+    if (req.file) {
+      // Upload the new image to ImageKit
+      const uploadResponse = await imagekit.upload({
+        file: req.file.buffer, // File buffer from multer
+        fileName: `replica_${Date.now()}`, // Unique filename
+        folder: "/replicas", // Optional: Folder in ImageKit
+      });
+
+      imageUrl = uploadResponse.url; // Get the uploaded image URL
+    }
 
     // Update the replica in the database
+    const updateData = { name, description, persona, tone };
+    if (imageUrl) {
+      updateData.image = imageUrl; // Update the image URL if a new image is uploaded
+    }
+
     const replica = await Replica.findByIdAndUpdate(id, updateData, {
       new: true, // Return the updated document
       runValidators: true, // Validate the update against the schema

@@ -13,7 +13,8 @@ const replicaSchema = new mongoose.Schema({
   description: { type: String },
   persona: { type: String, required: true },
   tone: { type: String, default: "neutral" },
-  // image: { type: String }, // Store image path or URL
-  // createdAt: { type: Date, default: Date.now },
+  image: { type: String }, // Field to store the uploaded image URL
+  createdAt: { type: Date, default: Date.now }, // Automatically store the creation timestamp
 });
+
 module.exports = mongoose.model("Replica", replicaSchema);
