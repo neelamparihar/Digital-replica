@@ -9,14 +9,14 @@ const CreateReplica = () => {
     name: "",
     description: "",
     persona: "",
-    tone: "neutral", // Default value as per schema
+    tone: "neutral",
+    image: null,
   });
 
-  // Check if the user is logged in, if not, redirect to auth page
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("token");
     if (!isLoggedIn) {
-      navigate("/auth"); // Redirect to auth page if not logged in
+      navigate("/auth");
     }
   }, [navigate]);
 
@@ -28,15 +28,38 @@ const CreateReplica = () => {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prevData) => ({
+        ...prevData,
+        image: URL.createObjectURL(file),
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formDataToSubmit = new FormData();
+    formDataToSubmit.append("name", formData.name);
+    formDataToSubmit.append("description", formData.description);
+    formDataToSubmit.append("persona", formData.persona);
+    formDataToSubmit.append("tone", formData.tone);
+    if (formData.image) {
+      formDataToSubmit.append("image", formData.image);
+    }
+
     try {
       const response = await axios.post(
         "http://localhost:5000/api/replicas",
-        formData
+        formDataToSubmit,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       console.log(response.data);
-
       if (response.status === 201) {
         alert(response.data.message);
         setFormData({
@@ -44,6 +67,7 @@ const CreateReplica = () => {
           description: "",
           persona: "",
           tone: "neutral",
+          image: null,
         });
       } else {
         alert("Error: " + response.data.message);
@@ -103,6 +127,29 @@ const CreateReplica = () => {
             <option value="casual">Casual</option>
           </select>
         </div>
+        <div className="form-group">
+          <label htmlFor="image">Upload Image:</label>
+          <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+        </div>
+
+        {formData.image && (
+          <div className="image-preview-container">
+            <div className="image-preview">
+              <img
+                src={formData.image}
+                alt="Uploaded Preview"
+                className="image-circle"
+              />
+            </div>
+          </div>
+        )}
+
         <button type="submit" className="submit-button">
           Create Replica
         </button>
