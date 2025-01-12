@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
+import _ from "lodash"; // Import lodash
 import "./Replica.css";
 
 const Replica = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [replicas, setReplicas] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [filteredReplicas, setFilteredReplicas] = useState([]); // State for filtered replicas
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -22,10 +25,9 @@ const Replica = () => {
   const fetchReplicas = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/replicas");
-      console.log("API Response:", response);
-
       if (response.data && response.status === 200) {
         setReplicas(response.data || []);
+        setFilteredReplicas(response.data || []); // Initialize filtered replicas
       } else {
         console.error("Invalid response format:", response);
       }
@@ -49,6 +51,9 @@ const Replica = () => {
         setReplicas((prevReplicas) =>
           prevReplicas.filter((replica) => replica._id !== id)
         );
+        setFilteredReplicas((prevReplicas) =>
+          prevReplicas.filter((replica) => replica._id !== id)
+        );
       } else {
         alert("Failed to delete replica. Please try again.");
       }
@@ -66,62 +71,37 @@ const Replica = () => {
     }
   };
 
+  // Debounced function to handle search
+  const debouncedSearch = useMemo(
+    () =>
+      _.debounce((query) => {
+        const filtered = replicas.filter((replica) =>
+          replica.name?.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredReplicas(filtered);
+      }, 2000), // 300ms delay
+    [replicas]
+  );
+
+  // Handle search input change
+  const handleSearchChange = useCallback(
+    (e) => {
+      const query = e.target.value;
+      setSearchQuery(query);
+      debouncedSearch(query); // Call the debounced search function
+    },
+    [debouncedSearch]
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel(); // Clean up debounced function on component unmount
+    };
+  }, [debouncedSearch]);
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <form class="flex items-center max-w-sm mx-auto my-6">
-          <label for="simple-search" class="sr-only">
-            Search
-          </label>
-          <div class="relative w-full">
-            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-              <svg
-                class="w-4 h-4 text-gray-500 dark:text-gray-400"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 18 20"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 5v10M3 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm12 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0V6a3 3 0 0 0-3-3H9m1.5-2-2 2 2 2"
-                />
-              </svg>
-            </div>
-            <input
-              type="text"
-              id="simple-search"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Search branch name..."
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            class="p-2.5 ms-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            <svg
-              class="w-4 h-4"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 20 20"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-              />
-            </svg>
-            <span class="sr-only">Search</span>
-          </button>
-        </form>
-
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Your Digital Replicas
@@ -130,6 +110,17 @@ const Replica = () => {
             Start your journey to create a personalized AI-powered digital
             replica.
           </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-8">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={handleSearchChange} // Use the debounced search handler
+            placeholder="Search by name..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
         <div className="space-y-12">
@@ -161,13 +152,24 @@ const Replica = () => {
           </div>
 
           {/* Existing Replicas Grid */}
-          {replicas && replicas.length > 0 && (
+          {filteredReplicas && filteredReplicas.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {replicas.map((replica) => (
+              {filteredReplicas.map((replica) => (
                 <div
                   key={replica._id}
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
+                  {/* Image Section */}
+                  {replica.image && (
+                    <div className="h-48 overflow-hidden">
+                      <img
+                        src={replica.image}
+                        alt={replica.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  {/* Replica Details */}
                   <div className="p-6">
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       {replica.name}
@@ -191,6 +193,8 @@ const Replica = () => {
                 </div>
               ))}
             </div>
+          ) : (
+            <p className="text-center text-gray-600">No replicas found.</p>
           )}
         </div>
       </div>

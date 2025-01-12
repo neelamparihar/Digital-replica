@@ -33,7 +33,7 @@ const CreateReplica = () => {
     if (file) {
       setFormData((prevData) => ({
         ...prevData,
-        image: URL.createObjectURL(file),
+        image: file, // Store the file object instead of URL
       }));
     }
   };
@@ -46,7 +46,7 @@ const CreateReplica = () => {
     formDataToSubmit.append("persona", formData.persona);
     formDataToSubmit.append("tone", formData.tone);
     if (formData.image) {
-      formDataToSubmit.append("image", formData.image);
+      formDataToSubmit.append("image", formData.image); // Append the actual file object
     }
 
     try {
@@ -142,7 +142,7 @@ const CreateReplica = () => {
           <div className="image-preview-container">
             <div className="image-preview">
               <img
-                src={formData.image}
+                src={URL.createObjectURL(formData.image)} // Use URL.createObjectURL for preview
                 alt="Uploaded Preview"
                 className="image-circle"
               />
