@@ -1,49 +1,41 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 const bodyParser = require("body-parser");
-
-// Load environment variables from .env file
-require("dotenv").config();
+require("dotenv").config(); // Load environment variables
+const cors = require("cors");
+const replicaRoutes = require("./routes/Replica");
 
 const app = express();
-const port = process.env.PORT || 5000;
-
-// Middleware
 app.use(cors());
+// Middleware
 app.use(bodyParser.json());
 
-// MongoDB Atlas connection string from .env file
-const dbURI = process.env.MONGODB_URI;
+// MongoDB Connection
+const mongoURI = process.env.MONGODB_URI; // Fetch URI from .env
+if (!mongoURI) {
+  console.error("Error: MONGODB_URI is not defined in .env");
+  process.exit(1);
+}
 
-// Connect to MongoDB Atlas
 mongoose
-  .connect(dbURI)
-  .then(() => console.log("Connected to MongoDB Atlas"))
-  .catch((err) => console.log("MongoDB connection error:", err));
-
-// Your routes here
-app.post("/api/create-replica", (req, res) => {
-  const { name, age, email, description } = req.body;
-
-  // Replica schema and model should be defined here
-  const Replica = mongoose.model("Replica", {
-    name: String,
-    age: Number,
-    email: String,
-    description: String,
+  .connect(mongoURI)
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch((err) => {
+    console.error("MongoDB connection error:", err.message);
+    process.exit(1); // Exit process if connection fails
   });
 
-  const newReplica = new Replica({ name, age, email, description });
+// Routes
+app.use("/api/replicas", replicaRoutes);
 
-  newReplica
-    .save()
-    .then(() => res.json({ message: "Replica created successfully!" }))
-    .catch((err) =>
-      res.status(500).json({ message: "Error saving replica", error: err })
-    );
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Unhandled Error:", err);
+  res.status(500).json({ message: "Internal Server Error" });
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Start the server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
