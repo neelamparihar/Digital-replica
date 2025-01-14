@@ -79,7 +79,7 @@ const Replica = () => {
           replica.name?.toLowerCase().includes(query.toLowerCase())
         );
         setFilteredReplicas(filtered);
-      }, 2000), // 300ms delay
+      }, 1000),
     [replicas]
   );
 
@@ -177,11 +177,20 @@ const Replica = () => {
                     <p className="text-gray-600 mb-4">{replica.description}</p>
                     <div className="flex justify-between gap-4">
                       <button
-                        onClick={() => alert("Feature coming soon!")}
+                        onClick={() =>
+                          navigate("/chatbot", {
+                            state: {
+                              replicaName: replica.name,
+                              replicaDescription: replica.description,
+                              replicaPersona: replica.persona,
+                            },
+                          })
+                        }
                         className="w-full bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                       >
-                        View Details
+                        Start Chat
                       </button>
+
                       <button
                         onClick={() => handleDelete(replica._id)}
                         className="w-full bg-red-100 text-red-800 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
