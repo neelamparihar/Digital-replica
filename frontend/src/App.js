@@ -9,9 +9,9 @@ import Replica from "./Components/Replica/Replica.jsx";
 import Auth from "./Components/Auth/Auth.jsx";
 import Chatbot from "./Components/Chatbot/Chatbot.jsx";
 import ProtectedRoute from "./Components/ProtectedRoute.jsx"; // Import ProtectedRoute
-import axios from "axios";
-axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL;
-axios.defaults.withCredentials = true;
+// import axios from "axios";
+// axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL;
+// axios.defaults.withCredentials = true;
 
 const App = () => {
   return (
