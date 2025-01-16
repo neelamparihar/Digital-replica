@@ -4,7 +4,9 @@ const bodyParser = require("body-parser");
 require("dotenv").config(); // Load environment variables
 const cors = require("cors");
 const replicaRoutes = require("./routes/Replica");
+const path = require("path");
 
+app.use(express.static(path.join(__dirname, "build"))); 
 const app = express();
 app.use(cors());
 // Middleware
