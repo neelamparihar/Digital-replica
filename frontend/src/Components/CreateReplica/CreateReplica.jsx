@@ -51,7 +51,7 @@ const CreateReplica = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/replicas",
+        `${process.env.REACT_APP_API_URL}/api/replicas`,
         formDataToSubmit,
         {
           headers: {
