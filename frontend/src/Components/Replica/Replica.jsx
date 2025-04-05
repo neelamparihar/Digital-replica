@@ -3,15 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
-import _ from "lodash"; // Import lodash
+import _ from "lodash";
 import "./Replica.css";
 
 const Replica = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [replicas, setReplicas] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
-  const [filteredReplicas, setFilteredReplicas] = useState([]); // State for filtered replicas
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredReplicas, setFilteredReplicas] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -29,7 +29,7 @@ const Replica = () => {
       );
       if (response.data && response.status === 200) {
         setReplicas(response.data || []);
-        setFilteredReplicas(response.data || []); // Initialize filtered replicas
+        setFilteredReplicas(response.data || []);
       } else {
         console.error("Invalid response format:", response);
       }
@@ -73,7 +73,6 @@ const Replica = () => {
     }
   };
 
-  // Debounced function to handle search
   const debouncedSearch = useMemo(
     () =>
       _.debounce((query) => {
@@ -85,19 +84,18 @@ const Replica = () => {
     [replicas]
   );
 
-  // Handle search input change
   const handleSearchChange = useCallback(
     (e) => {
       const query = e.target.value;
       setSearchQuery(query);
-      debouncedSearch(query); // Call the debounced search function
+      debouncedSearch(query);
     },
     [debouncedSearch]
   );
 
   useEffect(() => {
     return () => {
-      debouncedSearch.cancel(); // Clean up debounced function on component unmount
+      debouncedSearch.cancel();
     };
   }, [debouncedSearch]);
 
@@ -114,19 +112,17 @@ const Replica = () => {
           </p>
         </div>
 
-        {/* Search Bar */}
         <div className="mb-8">
           <input
             type="text"
             value={searchQuery}
-            onChange={handleSearchChange} // Use the debounced search handler
+            onChange={handleSearchChange}
             placeholder="Search by name..."
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div className="space-y-12">
-          {/* Create New Replica Card */}
           <div
             onClick={handleStaticCardClick}
             className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform transition-transform hover:scale-105"
@@ -153,7 +149,6 @@ const Replica = () => {
             </div>
           </div>
 
-          {/* Existing Replicas Grid */}
           {filteredReplicas && filteredReplicas.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredReplicas.map((replica) => (
@@ -161,7 +156,6 @@ const Replica = () => {
                   key={replica._id}
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
-                  {/* Image Section */}
                   {replica.image && (
                     <div className="h-48 overflow-hidden">
                       <img
@@ -171,7 +165,6 @@ const Replica = () => {
                       />
                     </div>
                   )}
-                  {/* Replica Details */}
                   <div className="p-6">
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       {replica.name}
@@ -193,12 +186,14 @@ const Replica = () => {
                         Start Chat
                       </button>
 
-                      <button
-                        onClick={() => handleDelete(replica._id)}
-                        className="w-full bg-red-100 text-red-800 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      {isLoggedIn && (
+                        <button
+                          onClick={() => handleDelete(replica._id)}
+                          className="w-full bg-red-100 text-red-800 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
